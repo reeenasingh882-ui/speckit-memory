@@ -1,0 +1,1 @@
+{"type":"commonjs","description":"CommonJS scope for speckit-memory lib (keeps lib importable regardless of root package type)"}
