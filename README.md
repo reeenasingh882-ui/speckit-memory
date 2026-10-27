@@ -110,3 +110,9 @@ time with `store.scan()`.
 ## License
 
 MIT
+
+## Links
+
+- GitHub: https://github.com/venkatreddygutha9-stack/speckit-memory
+- Issues: https://github.com/venkatreddygutha9-stack/speckit-memory/issues
+- npm: https://www.npmjs.com/package/speckit-memory
