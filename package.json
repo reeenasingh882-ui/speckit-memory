@@ -19,14 +19,41 @@
     "node": ">=22.5"
   },
   "keywords": [
+    "spec-driven-development",
+    "project-memory",
+    "ai-memory",
+    "coding-assistant",
     "mcp",
     "model-context-protocol",
+    "mcp-server",
+    "claude",
+    "cursor",
+    "llm",
+    "ai-agent",
+    "ai-tools",
+    "persistent-memory",
+    "knowledge-base",
+    "context-management",
+    "spec-management",
+    "development-memory",
+    "documentation",
+    "json-rpc",
+    "stdio",
+    "nodejs",
+    "javascript",
+    "typescript",
+    "developer-tools",
+    "ai-coding",
     "memory",
     "spec",
     "specification",
-    "ai",
     "assistant",
-    "context"
+    "context",
+    "code-memory",
+    "session-memory",
+    "workspace-memory",
+    "spec-driven",
+    "ai-assistant"
   ],
   "scripts": {
     "mcp-start": "node mcp-server.js",
@@ -39,7 +66,7 @@
   "bugs": {
     "url": "https://github.com/venkatreddygutha9-stack/speckit-memory/issues"
   },
-  "homepage": "https://github.com/venkatreddygutha9-stack/speckit-memory",
+  "homepage": "https://github.com/venkatreddygutha9-stack/speckit-memory#readme",
   "author": "venkatreddygutha9-stack",
   "types": "./index.d.ts",
   "exports": {

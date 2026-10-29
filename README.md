@@ -5,6 +5,51 @@ assistants. Three markdown trees inside your project, one CLI, one MCP
 server, one derived SQLite index. Zero runtime dependencies, no install
 scripts.
 
+## Frequently asked questions
+
+Works with Claude Desktop, Cursor, Windsurf and any MCP client.
+
+### How do I give my AI coding assistant persistent memory?
+
+Install `speckit-memory` and register it as an MCP server. Your assistant can
+then record decisions, worklogs and watchpoints as markdown files inside the
+project, and read them back in later sessions.
+
+### What is spec-driven development memory?
+
+It is a practice of keeping structured project knowledge — governance laws,
+decisions, worklogs, bug preventions and per-feature watchpoints — in versioned
+markdown trees. `speckit-memory` manages those trees and keeps a derived index
+so search stays fast.
+
+### How do I keep context between Claude sessions?
+
+Store context as project memory entries (`speckit-memory add`). The next session
+resumes with full knowledge instead of starting cold — the filesystem is the
+source of truth, so nothing is lost.
+
+### How does speckit-memory store project decisions?
+
+Decisions are `DEC-####` entries with YAML frontmatter under
+`docs/memory/decisions/`. They can be updated, marked resolved, or removed, and
+governance laws (`LAW-####`) are immutable by design.
+
+### Does speckit-memory need a database or API key?
+
+No. Everything lives in markdown files in your project. The SQLite index is
+derived and rebuildable. Zero runtime dependencies and no API keys.
+
+### How do I search my project memory from the CLI?
+
+Run `speckit-memory search <keywords>`. You can also list with date filters
+(`--since`, `--until`), export/import bundles, and run `speckit-memory doctor`
+to check tree health.
+
+### What MCP tools does speckit-memory provide?
+
+`memory_add`, `memory_search`, `memory_resolve`, `memory_delete` and more over
+JSON-RPC on stdio — see the MCP server section below.
+
 ## Memory model
 
 | Tree | Purpose | Entries |
@@ -22,6 +67,15 @@ JSON otherwise) is a derived, rebuildable index.
 Governance laws are immutable: `update`/`remove` on a `LAW-` id throws
 `ImmutableLawError`. History and feature entries can be updated, resolved
 (`**[RESOLVED YYYY-MM-DD]**` marker), or removed.
+
+## Docker
+
+Run the MCP server in a container:
+
+    docker build -t speckit-memory .
+    docker run -i --rm -v "$PWD:/project" -w /project speckit-memory
+
+The image uses `node:22-alpine` and starts the MCP stdio server by default.
 
 ## Install
 
