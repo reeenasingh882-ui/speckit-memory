@@ -38,8 +38,15 @@ Requires Node.js 22.5 or newer. No postinstall, no native builds, no dependencie
     speckit-memory add feature "Which redirect flow for mobile?" --feature auth --kind open-question
     speckit-memory list --type law
     speckit-memory list --feature auth --json
+    speckit-memory list --since 2026-01-01 --until 2026-06-30
     speckit-memory show WP-AUTH-0001
+    speckit-memory search "token expiry" auth --limit 10
+    speckit-memory remove LOG-0002
     speckit-memory resolve OQ-AUTH-0001
+    speckit-memory export backup.json     # full JSON backup of every entry
+    speckit-memory import backup.json     # restore (existing ids are skipped)
+    speckit-memory stats                  # counts by type/category/status
+    speckit-memory doctor                 # tree + cache health check
     speckit-memory synthesize auth        # writes specs/auth/memory.md (~900 words)
     speckit-memory synthesize auth --words 600 --stdout
     speckit-memory mcp-start              # MCP server on stdio (JSON-RPC 2.0)
@@ -64,8 +71,9 @@ auto-discover via `.specify`, `package.json`, or `.git`). Exit codes:
 ## MCP server
 
 `speckit-memory mcp-start` (or `node mcp-server.js`) speaks MCP over stdio
-and exposes four tools: `memory_add`, `memory_list`, `memory_search`,
-`memory_synthesize`. The server resolves its engine in this order:
+and exposes six tools: `memory_add`, `memory_list`, `memory_search`,
+`memory_synthesize`, `memory_resolve`, `memory_delete`. The server resolves
+its engine in this order:
 
 1. `SPECKIT_MEMORY_ENGINE` env var (path to an engine module)
 2. `lib/engine.js` — **canonical engine** (shipped; backed by MemoryStore)
@@ -77,6 +85,31 @@ The canonical engine maps friendly types (`decision`, `pattern`, `lesson`,
 (explicit project root) and `SPECKIT_MEMORY_PATH` (project directory, or a
 legacy `.json`/`.db` path whose parent directory becomes the project root).
 CLI and MCP therefore read and write the same memories.
+
+### MCP client configuration
+
+Register the server in your MCP client, e.g. `claude_desktop_config.json`:
+
+    {
+      "mcpServers": {
+        "speckit-memory": {
+          "command": "npx",
+          "args": ["-y", "speckit-memory", "mcp-start"]
+        }
+      }
+    }
+
+Or point `command` at a local checkout (`node /path/to/speckit-memory
+mcp-start`). Set `SPECKIT_MEMORY_ROOT` in `env` when the server should bind to
+a specific project instead of auto-discovering one.
+
+### Search semantics
+
+`speckit-memory search` and `memory_search` treat the query as OR-ish
+keywords: a memory matches when the keywords hit, and more hits rank higher.
+The standalone `lib/sqlite-cache.js` search helper instead requires **all**
+keywords (AND). This is intentional: the CLI/MCP search is a friendly
+recall tool, while the cache helper is a strict filter.
 
 ## Programmatic API
 
@@ -101,6 +134,27 @@ Derived index cache (`store.cache`): `replaceAll(entries)`,
 `query({type, category, feature, tag})`, `count()`, `close()` — schema
 version tracked in the `meta` table (`CACHE_SCHEMA_VERSION`). Rebuild at any
 time with `store.scan()`.
+
+## Troubleshooting
+
+- **"Memory trees are not initialized"** — since 0.1.3 the MCP engine no
+  longer silently creates `.specify/`/`docs/memory/` trees in whatever
+  directory it was started from. Run `speckit-memory init` in the project
+  (or point `SPECKIT_MEMORY_ROOT` at an initialized one) before starting the
+  server.
+
+- **"file is not a database" or a corrupt `.speckit-memory/index.db`** — the
+  index is a derived cache. Since 0.1.3 a corrupt `index.db` is moved aside as
+  `index.db.corrupt-<timestamp>` and rebuilt automatically; the original
+  markdown trees are never touched. If problems persist, delete
+  `.speckit-memory/` and run `speckit-memory doctor`.
+- **Windows-authored markdown loses frontmatter** — files saved with a UTF-8
+  BOM are handled correctly since 0.1.3 (the BOM is stripped before parsing).
+- **`no SQLite backend available`** — `lib/sqlite-cache.js` and
+  `lib/synthesis-engine.js` need `node:sqlite` (Node 22.5+, still marked
+  experimental by Node; you may see an `ExperimentalWarning`). The core
+  memory store (`lib/memory-store.js`) falls back to JSON when sqlite is
+  missing, so basic add/list/search keep working everywhere.
 
 ## Development
 

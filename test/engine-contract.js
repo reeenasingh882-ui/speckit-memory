@@ -18,6 +18,9 @@ function ok(name, condition, detail) {
   else { failed++; console.log('  FAIL ' + name + (detail ? ' — ' + detail : '')); }
 }
 function section(name) { console.log('\n== ' + name + ' =='); }
+// The engine is explicit-init since 0.1.3: initialize the project tree
+// up front instead of relying on the old implicit auto-init.
+new (require(path.join(PKG, 'lib', 'memory-store.js')).MemoryStore)(PROJECT).init();
 const enginePath = path.join(PKG, 'lib', 'engine.js');
 let engine = require(enginePath);
 

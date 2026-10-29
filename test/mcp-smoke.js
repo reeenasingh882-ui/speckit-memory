@@ -22,6 +22,10 @@ let nextId = 0;
 const newId = () => ++nextId;
 
 function startServer(storePath) {
+  // Explicit init since 0.1.3: the engine no longer auto-creates trees, so
+  // initialize the project directory the server will bind to.
+  const dir = path.extname(storePath) ? path.dirname(storePath) : storePath;
+  new (require(path.join(ROOT, 'lib', 'memory-store.js')).MemoryStore)(dir).init();
   const child = spawn(process.execPath, ['mcp-server.js'], {
     cwd: ROOT,
     env: Object.assign({}, process.env, { SPECKIT_MEMORY_PATH: storePath }),
@@ -99,7 +103,12 @@ async function main() {
   s1.send({ jsonrpc: '2.0', id: listId, method: 'tools/list' });
   const list = await s1.waitFor((m) => m.id === listId);
   const toolNames = list.result && list.result.tools ? list.result.tools.map((t) => t.name).sort() : [];
-  expect('tools/list: exactly 4 tools', toolNames.length === 4, toolNames.join(','));
+  expect(
+    'tools/list: exactly 6 tools',
+    toolNames.length === 6 &&
+      toolNames.join(',') === 'memory_add,memory_delete,memory_list,memory_resolve,memory_search,memory_synthesize',
+    toolNames.join(',')
+  );
   expect('tools/list: memory_add, memory_list, memory_search, memory_synthesize present',
     ['memory_add', 'memory_list', 'memory_search', 'memory_synthesize'].every((n) => toolNames.includes(n)));
   expect('tools/list: every tool has description + JSON Schema inputSchema',

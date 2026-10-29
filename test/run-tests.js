@@ -439,6 +439,9 @@ test('engine adapter satisfies the MCP contract (file-structure engine)', () => 
   try {
     process.env.SPECKIT_MEMORY_ROOT = dir;
     delete require.cache[require.resolve(enginePath)];
+    // Explicit init since 0.1.3 (the engine no longer auto-creates trees).
+    delete require.cache[require.resolve(path.join(PKG_DIR, 'lib', 'memory-store.js'))];
+    require(path.join(PKG_DIR, 'lib', 'memory-store.js')).MemoryStore && new (require(path.join(PKG_DIR, 'lib', 'memory-store.js')).MemoryStore)(dir).init();
     const engine = require(enginePath);
     if (!Array.isArray(engine.MEMORY_TYPES) || !engine.MEMORY_TYPES.includes('law')) {
       // The canonical lib/engine.js in this tree is the sqlite-backed engine

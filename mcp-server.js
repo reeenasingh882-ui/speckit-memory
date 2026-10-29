@@ -140,22 +140,34 @@ function startMcpServer(options = {}) {
     error: { code: -32603, message: `Internal error: ${(message && message.message) || String(message)}` },
   });
 
+  // In-flight responses are tracked so a stdin close cannot swallow the
+  // replies of requests that were accepted but not yet written.
+  const pending = new Set();
+  const track = (promise) => {
+    pending.add(promise);
+    const done = () => pending.delete(promise);
+    promise.then(done, done);
+    return promise;
+  };
+
   const dispatch = (message) => {
-    Promise.resolve()
-      .then(() => handler.handleMessage(message))
-      .then(
-        (response) => {
-          if (response && response.result && response.result.protocolVersion) {
-            negotiatedVersion = response.result.protocolVersion;
+    track(
+      Promise.resolve()
+        .then(() => handler.handleMessage(message))
+        .then(
+          (response) => {
+            if (response && response.result && response.result.protocolVersion) {
+              negotiatedVersion = response.result.protocolVersion;
+            }
+            if (response) write(response);
+          },
+          (err) => {
+            const id = message && typeof message === 'object' && !Array.isArray(message) && 'id' in message
+              ? message.id : null;
+            write(internalError(err, id));
           }
-          if (response) write(response);
-        },
-        (err) => {
-          const id = message && typeof message === 'object' && !Array.isArray(message) && 'id' in message
-            ? message.id : null;
-          write(internalError(err, id));
-        }
-      );
+        )
+    );
   };
 
   const rl = readline.createInterface({ input: stdin, terminal: false, crlfDelay: Infinity });
@@ -180,19 +192,21 @@ function startMcpServer(options = {}) {
         write({ jsonrpc: '2.0', id: null, error: { code: -32600, message: 'Invalid Request: empty batch' } });
         return;
       }
-      Promise.all(parsed.map((element) =>
-        Promise.resolve()
-          .then(() => handler.handleMessage(element))
-          .then((response) => response || null)
-          .catch((err) => {
-            const id = element && typeof element === 'object' && !Array.isArray(element) && 'id' in element
-              ? element.id : null;
-            return internalError(err, id);
-          })
-      )).then((responses) => {
-        const nonEmpty = responses.filter(Boolean);
-        if (nonEmpty.length) write(nonEmpty);
-      });
+      track(
+        Promise.all(parsed.map((element) =>
+          Promise.resolve()
+            .then(() => handler.handleMessage(element))
+            .then((response) => response || null)
+            .catch((err) => {
+              const id = element && typeof element === 'object' && !Array.isArray(element) && 'id' in element
+                ? element.id : null;
+              return internalError(err, id);
+            })
+        )).then((responses) => {
+          const nonEmpty = responses.filter(Boolean);
+          if (nonEmpty.length) write(nonEmpty);
+        })
+      );
       return;
     }
     dispatch(parsed);
@@ -206,7 +220,10 @@ function startMcpServer(options = {}) {
 
   rl.on('close', () => {
     close();
-    process.exitCode = 0;
+    // Flush any response still in flight before signalling completion.
+    Promise.all([...pending]).then(() => {
+      process.exitCode = 0;
+    });
   });
   process.once('SIGINT', close);
   process.once('SIGTERM', close);

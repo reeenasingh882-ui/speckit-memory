@@ -1,6 +1,6 @@
 {
   "name": "speckit-memory",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Persistent spec-driven memory for AI coding assistants: engine, CLI, and MCP server (JSON-RPC 2.0 over stdio)",
   "license": "MIT",
   "main": "./mcp-server.js",
@@ -11,6 +11,7 @@
     "bin/",
     "lib/",
     "mcp-server.js",
+    "index.d.ts",
     "README.md",
     "LICENSE"
   ],
@@ -29,7 +30,7 @@
   ],
   "scripts": {
     "mcp-start": "node mcp-server.js",
-    "test": "node test/run-tests.js && node test/mcp-smoke.js && node test/sqlite-synthesis.js && node test/engine-contract.js"
+    "test": "node test/run-tests.js && node test/mcp-smoke.js && node test/sqlite-synthesis.js && node test/engine-contract.js && node test/regression.js"
   },
   "repository": {
     "type": "git",
@@ -39,5 +40,19 @@
     "url": "https://github.com/venkatreddygutha9-stack/speckit-memory/issues"
   },
   "homepage": "https://github.com/venkatreddygutha9-stack/speckit-memory",
-  "author": "venkatreddygutha9-stack"
+  "author": "venkatreddygutha9-stack",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "require": "./mcp-server.js",
+      "default": "./mcp-server.js"
+    },
+    "./lib": {
+      "types": "./index.d.ts",
+      "require": "./lib/index.js",
+      "default": "./lib/index.js"
+    },
+    "./package.json": "./package.json"
+  }
 }
