@@ -1,6 +1,6 @@
 {
   "name": "speckit-memory",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Persistent spec-driven memory for AI coding assistants: engine, CLI, and MCP server (JSON-RPC 2.0 over stdio)",
   "license": "MIT",
   "main": "./mcp-server.js",
