@@ -61,13 +61,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/venkatreddygutha9-stack/speckit-memory.git"
+    "url": "git+https://github.com/reeenasingh882-ui/speckit-memory.git"
   },
   "bugs": {
-    "url": "https://github.com/venkatreddygutha9-stack/speckit-memory/issues"
+    "url": "https://github.com/reeenasingh882-ui/speckit-memory/issues"
   },
-  "homepage": "https://github.com/venkatreddygutha9-stack/speckit-memory#readme",
-  "author": "venkatreddygutha9-stack",
+  "homepage": "https://github.com/reeenasingh882-ui/speckit-memory#readme",
+  "author": "reeenasingh882-ui",
   "types": "./index.d.ts",
   "exports": {
     ".": {
